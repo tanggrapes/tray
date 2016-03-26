@@ -470,6 +470,9 @@ public class ImageWrapper {
         // bitmap.
         int offset = 0;
 
+        // bit width multiplier for newer printers
+        int mult = 3;
+
         while(offset < getHeight()) {
             // The third and fourth parameters to the bit image command are
             // 'nL' and 'nH'. The 'L' and the 'H' refer to 'low' and 'high', respectively.
@@ -485,13 +488,14 @@ public class ImageWrapper {
                 builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL, nH});
             } else {
                 builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL});
+                mult = 1;
             }
 
             for(int x = 0; x < getWidth(); ++x) {
                 // Remember, 24 dots = 24 bits = 3 bytes.
                 // The 'k' variable keeps track of which of those
                 // three bytes that we're currently scribbling into.
-                for(int k = 0; k < 3; ++k) {
+                for(int k = 0; k < mult; ++k) {
                     byte slice = 0;
 
                     // A byte is 8 bits. The 'b' variable keeps track
@@ -532,7 +536,7 @@ public class ImageWrapper {
             // We're done with this 24-dot high pass. Render a newline
             // to bump the print head down to the next line
             // and keep on trucking.
-            offset += 24;
+            offset += 8 * mult;
             builder.append(new byte[] {10});
         }
 
