@@ -481,7 +481,11 @@ public class ImageWrapper {
             byte nL = (byte)((int)(getWidth() % 256));
             byte nH = (byte)((int)(getWidth() / 256));
             dotDensity = 0;
-            builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL, nH});
+            if (dotDensity > 1) {
+                builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL, nH});
+            } else {
+                builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL});
+            }
 
             for(int x = 0; x < getWidth(); ++x) {
                 // Remember, 24 dots = 24 bits = 3 bytes.
