@@ -487,6 +487,7 @@ public class ImageWrapper {
             if (dotDensity > 1) {
                 builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL, nH});
             } else {
+                System.out.println("\n\n\n\n############################# Using legacy image logic...\n\n\n\n");
                 builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL});
                 mult = 1;
             }
