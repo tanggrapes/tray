@@ -480,6 +480,7 @@ public class ImageWrapper {
             //builder.append(new byte[] {0x1B, 0x2A, 33, -128, 0});
             byte nL = (byte)((int)(getWidth() % 256));
             byte nH = (byte)((int)(getWidth() / 256));
+            dotDensity = 0;
             builder.append(new byte[] {0x1B, 0x2A, (byte)dotDensity, nL, nH});
 
             for(int x = 0; x < getWidth(); ++x) {
