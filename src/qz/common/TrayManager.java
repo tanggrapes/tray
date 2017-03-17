@@ -385,38 +385,38 @@ public class TrayManager {
     }
 
     public boolean showGatewayDialog(final Certificate cert, final String prompt) {
-        if (cert == null) {
-            displayErrorMessage("Invalid certificate");
-            return false;
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        gatewayDialog.prompt("%s wants to " + prompt, cert);
-                    }
-                });
-            }
-            catch(Exception ignore) {}
+//        if (cert == null) {
+//            displayErrorMessage("Invalid certificate");
+//            return false;
+//        } else {
+//            try {
+//                SwingUtilities.invokeAndWait(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        gatewayDialog.prompt("%s wants to " + prompt, cert);
+//                    }
+//                });
+//            }
+//            catch(Exception ignore) {}
+//
+//            if (gatewayDialog.isApproved()) {
+//                log.info("Allowed {} to {}", cert.getCommonName(), prompt);
+//                if (gatewayDialog.isPersistent()) {
+//                    whiteList(cert);
+//                }
+//            } else {
+//                log.info("Denied {} to {}", cert.getCommonName(), prompt);
+//                if (gatewayDialog.isPersistent()) {
+//                    if (Certificate.UNKNOWN.equals(cert)) {
+//                        anonymousItem.doClick(); // if always block anonymous requests -> flag menu item
+//                    } else {
+//                        blackList(cert);
+//                    }
+//                }
+//            }
+//        }
 
-            if (gatewayDialog.isApproved()) {
-                log.info("Allowed {} to {}", cert.getCommonName(), prompt);
-                if (gatewayDialog.isPersistent()) {
-                    whiteList(cert);
-                }
-            } else {
-                log.info("Denied {} to {}", cert.getCommonName(), prompt);
-                if (gatewayDialog.isPersistent()) {
-                    if (Certificate.UNKNOWN.equals(cert)) {
-                        anonymousItem.doClick(); // if always block anonymous requests -> flag menu item
-                    } else {
-                        blackList(cert);
-                    }
-                }
-            }
-        }
-
-        return gatewayDialog.isApproved();
+        return true;
     }
 
     private void whiteList(Certificate cert) {

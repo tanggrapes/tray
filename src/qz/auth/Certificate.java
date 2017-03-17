@@ -67,7 +67,7 @@ public class Certificate {
         map.put("organization", "Unknown");
         map.put("validFrom", "0000-00-00 00:00:00");
         map.put("validTo", "0000-00-00 00:00:00");
-        map.put("valid", "false");
+        map.put("valid", "true");
         UNKNOWN = Certificate.loadCertificate(map);
 
         map.put("fingerprint", "EXPIRED REQUEST");

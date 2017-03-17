@@ -119,7 +119,8 @@ public class PrintSocketClient {
         trayManager.displayInfoMessage("Client connected");
 
         //new connections are unknown until they send a proper certificate
-        openConnections.put(session.getRemoteAddress().getPort(), new SocketConnection(Certificate.UNKNOWN));
+        openConnections.put(session.getRemoteAddress().getPort(), new SocketConnection(Certificate.trustedRootCert));
+        log.info("=========");
     }
 
     @OnWebSocketClose
