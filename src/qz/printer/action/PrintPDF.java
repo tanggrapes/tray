@@ -2,12 +2,10 @@ package qz.printer.action;
 
 import net.sourceforge.iharder.Base64;
 import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.printing.PDFPrintable;
 import org.apache.pdfbox.printing.Scaling;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -15,15 +13,17 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qz.common.Constants;
+import qz.printer.BookBundle;
+import qz.printer.PDFWrapper;
 import qz.printer.PrintOptions;
 import qz.printer.PrintOutput;
 import qz.utils.PrintingUtilities;
 import qz.utils.SystemUtilities;
 
 import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.OrientationRequested;
 import java.awt.geom.AffineTransform;
 import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.*;
@@ -77,6 +77,13 @@ public class PrintPDF extends PrintPixel implements PrintProcessor {
     }
 
     @Override
+    public PrintRequestAttributeSet applyDefaultSettings(PrintOptions.Pixel pxlOpts, PageFormat page) {
+        //page orient does not set properly on pdfs with orientation requested attribute
+        page.setOrientation(pxlOpts.getOrientation().getAsFormat());
+        return super.applyDefaultSettings(pxlOpts, page);
+    }
+
+    @Override
     public void print(PrintOutput output, PrintOptions options) throws PrinterException {
         if (pdfs.isEmpty()) {
             log.warn("Nothing to print");
@@ -97,38 +104,29 @@ public class PrintPDF extends PrintPixel implements PrintProcessor {
 
         Scaling scale = (pxlOpts.isScaleContent()? Scaling.SCALE_TO_FIT:Scaling.ACTUAL_SIZE);
 
-        PDDocument masterDoc = new PDDocument();
-        PDFMergerUtility mu = new PDFMergerUtility();
+        BookBundle bundle = new BookBundle();
 
-        try {
-            for(PDDocument doc : pdfs) {
-                for(PDPage pd : doc.getPages()) {
-                    if (pxlOpts.getRotation() % 360 != 0) {
-                        rotatePage(doc, pd, pxlOpts.getRotation());
-                    }
-
-                    if (!attributes.containsKey(OrientationRequested.class) && pxlOpts.getOrientation() != null &&
-                            pxlOpts.getOrientation() != PrintOptions.Orientation.PORTRAIT) {
-                        //force orientation change at data level
-                        pd.setRotation(pxlOpts.getOrientation().getDegreesRot());
-                    }
+        for(PDDocument doc : pdfs) {
+            for(PDPage pd : doc.getPages()) {
+                if (pxlOpts.getRotation() % 360 != 0) {
+                    rotatePage(doc, pd, pxlOpts.getRotation());
                 }
 
-                mu.appendDocument(masterDoc, doc);
+                if (pxlOpts.getOrientation() != null && pxlOpts.getOrientation() != PrintOptions.Orientation.PORTRAIT) {
+                    //flip imageable area dimensions when in landscape
+                    Paper repap = page.getPaper();
+                    repap.setImageableArea(repap.getImageableX(), repap.getImageableY(), repap.getImageableHeight(), repap.getImageableWidth());
+                    page.setPaper(repap);
+                }
             }
 
-            mu.mergeDocuments(null);
-        }
-        catch(IOException e) {
-            throw new PrinterException(e.getLocalizedMessage());
+            bundle.append(new PDFWrapper(doc, scale, false, (float)(pxlOpts.getDensity() * pxlOpts.getUnits().as1Inch()), false), page, doc.getNumberOfPages());
         }
 
         job.setJobName(pxlOpts.getJobName(Constants.PDF_PRINT));
-        job.setPrintable(new PDFPrintable(masterDoc, scale, false, (float)(pxlOpts.getDensity() * pxlOpts.getUnits().as1Inch()), false), page);
+        job.setPageable(bundle.wrapAndPresent());
 
         printCopies(output, pxlOpts, job, attributes);
-
-        try { masterDoc.close(); } catch(Exception ignore) {}
     }
 
     private void rotatePage(PDDocument doc, PDPage page, double rotation) {

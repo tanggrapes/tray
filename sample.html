@@ -231,7 +231,7 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <a href="https://qz.io/wiki/what-is-postScript-printing" target="new">What is Pixel Printing?</a>
+                        <a href="https://qz.io/wiki/2.0-pixel-printing" target="new">What is Pixel Printing?</a>
 
                         <span style="float: right;">
                             <a href="javascript:findPrinter('XPS', true);">Microsoft XPS</a> |
@@ -459,8 +459,8 @@
                                         </div>
 
                                         <div class="form-group form-inline">
-                                            <label for="serialBegin">Response Start</label>
-                                            <input type="text" id="serialBegin" class="form-control pull-right" />
+                                            <label for="serialStart">Response Start</label>
+                                            <input type="text" id="serialStart" class="form-control pull-right" />
                                         </div>
 
                                         <div class="form-group form-inline">
@@ -960,7 +960,7 @@
 
         var printData = [
             { type: 'raw', format: 'image', data: 'assets/img/image_sample_bw.png', options: { language: 'ESCP', dotDensity: 'single' } },
-            { type: 'raw', data: '\nPrinted using qz-print plugin.\n\n\n\n\n\n' }
+            { type: 'raw', data: '\nPrinted using qz-tray plugin.\n\n\n\n\n\n' }
         ];
 
         qz.print(config, printData).catch(displayError);
@@ -1209,7 +1209,7 @@
         if (!widthVal) { widthVal = null; }
 
         var bounds = {
-            begin: $("#serialBegin").val(),
+            start: $("#serialStart").val(),
             end: $("#serialEnd").val(),
             width: widthVal
         };
@@ -1456,7 +1456,7 @@
     function resetSerialOptions() {
         $("#serialPort").val('');
         $("#serialCmd").val('');
-        $("#serialBegin").val("0x0002"); //String.fromCharCode(2)
+        $("#serialStart").val("0x0002"); //String.fromCharCode(2)
         $("#serialEnd").val("0x000D"); //String.fromCharCode(13)
 
         $("#serialBaud").val(9600);

@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @version 2.0.1-3
+ * @version 2.0.3-2;
  * @overview QZ Tray Connector
  * <p/>
  * Connects a web client to the QZ Tray software.
@@ -28,6 +28,7 @@ var qz = (function() {
 ///// PRIVATE METHODS /////
 
     var _qz = {
+        VERSION: "2.0.3-2",                              //must match @version above
         DEBUG: false,
 
         log: {
@@ -710,12 +711,18 @@ var qz = (function() {
             },
 
             /**
+             * @param {string} [hostname] Hostname to try to connect to when determining network interfaces, defaults to "google.com"
+             * @param {number} [port] Port to use with custom hostname, defaults to 443
+             *
              * @returns {Promise<Object<{ipAddress: String, macAddress: String}>|Error>} Connected system's network information.
              *
              * @memberof qz.websocket
              */
-            getNetworkInfo: function() {
-                return _qz.websocket.dataPromise('websocket.getNetworkInfo');
+            getNetworkInfo: function(hostname, port) {
+                return _qz.websocket.dataPromise('websocket.getNetworkInfo', {
+                    hostname: hostname,
+                    port: port
+                });
             }
 
         },
@@ -859,7 +866,7 @@ var qz = (function() {
                 if (data[i].constructor === Object) {
                     if ((!data[i].format && data[i].type && data[i].type.toUpperCase() !== 'RAW') //unspecified format and not raw -> assume file
                         || (data[i].format && (data[i].format.toUpperCase() === 'FILE'
-                        || data[i].format.toUpperCase() === 'IMAGE'
+                        || (data[i].format.toUpperCase() === 'IMAGE' && !(data[i].data.indexOf("data:image/") === 0 && data[i].data.indexOf(";base64,") !== 0))
                         || data[i].format.toUpperCase() === 'XML'))) {
                         data[i].data = _qz.tools.absolute(data[i].data);
                     }
@@ -932,8 +939,8 @@ var qz = (function() {
              *  @param {string} [properties.baudRate=9600]
              *  @param {string} [properties.dataBits=8]
              *  @param {string} [properties.stopBits=1]
-             *  @param {string} [properties.parity='NONE']
-             *  @param {string} [properties.flowControl='NONE']
+             *  @param {string} [properties.parity='NONE'] Valid values <code>[NONE| EVEN | ODD | MARK | SPACE]</code>
+             *  @param {string} [properties.flowControl='NONE'] Valid values <code>[NONE | XONXOFF_OUT | XONXOFF_IN | RTSCTS_OUT | RTSCTS_IN]</code>
              *
              * @returns {Promise<null|Error>}
              *
@@ -1467,8 +1474,16 @@ var qz = (function() {
             setWebSocketType: function(ws) {
                 _qz.tools.ws = ws;
             }
-        }
+        },
 
+        /**
+         * Version of this JavaScript library
+         *
+         * @constant {string}
+         *
+         * @memberof qz
+         */
+        version: _qz.VERSION
     };
 
 })();
@@ -1484,7 +1499,8 @@ var qz = (function() {
             qz.api.setSha256Type(function(data) {
                 return crypto.createHash('sha256').update(data).digest('hex');
             });
-        } catch(ignore) {}
+        }
+        catch(ignore) {}
     } else {
         window.qz = qz;
     }

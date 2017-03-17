@@ -133,6 +133,15 @@ public class PrintImage extends PrintPixel implements PrintProcessor, Printable 
         }
         log.trace("Requested page {} for printing", pageIndex);
 
+        if (graphics.getClass().getCanonicalName().equals("sun.print.PeekGraphics")) {
+            //java uses class only to query if a page needs printed - save memory/time by short circuiting
+            return PAGE_EXISTS;
+        }
+
+
+        //allows pages view to rotate in different orientations
+        graphics.drawString(" ", 0, 0);
+
         BufferedImage imgToPrint = fixColorModel(images.get(pageIndex));
         if (imageRotation % 360 != 0) {
             imgToPrint = rotate(imgToPrint, imageRotation);
@@ -177,6 +186,8 @@ public class PrintImage extends PrintPixel implements PrintProcessor, Printable 
         // Now we perform our rendering
         Graphics2D graphics2D = withRenderHints((Graphics2D)graphics, interpolation);
         log.trace("{}", graphics2D.getRenderingHints());
+
+        log.debug("Memory: {}m/{}m", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576, Runtime.getRuntime().maxMemory() / 1048576);
 
         graphics2D.drawImage(imgToPrint, (int)boundX, (int)boundY, (int)(boundX + imgW), (int)(boundY + imgH),
                              0, 0, imgToPrint.getWidth(), imgToPrint.getHeight(), null);
